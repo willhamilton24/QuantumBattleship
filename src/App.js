@@ -384,7 +384,11 @@ class Game extends React.Component {
         document.addEventListener("keydown", this.placeShip);
       }
     } else {
-      this.determineHit(index, false)
+      if (this.state.phase % 2 != 0) {
+        this.determineHit(index, false)
+        this.nextPhase()
+        this.ws.send(JSON.stringify({event: "turn"}));
+      }
     }
     //Ask Server
     //Mark Response
@@ -575,6 +579,7 @@ class Game extends React.Component {
         this.setState({quantumGrid: data.quantumBoard});
       } else if (data.event === "turn") {
         this.determineHit(data.target, true)
+        this.nextPhase()
       }
       console.log(data);
     }
