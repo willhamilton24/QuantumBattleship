@@ -383,7 +383,9 @@ class Game extends React.Component {
 
         document.addEventListener("keydown", this.placeShip);
       }
-    } 
+    } else {
+      this.determineHit(index, false)
+    }
     //Ask Server
     //Mark Response
     console.log("Guessed");
@@ -509,8 +511,8 @@ class Game extends React.Component {
     let p = this.state.phase;
     p += 1
     if (p >= 5) {
-      this.setState({pregame: false, phase: p,});
       this.ws.send(JSON.stringify({event: "p-board", playerBoard: this.state.linearGrid}));
+      this.setState({pregame: false, phase: p,});
     } else {
       let shipSize = 4
       if (p === 2 || p === 3) {
@@ -522,6 +524,20 @@ class Game extends React.Component {
       //console.log(this.state.phase);
     }
     
+  }
+
+  determineHit(target, quantum) {
+    let targetGrid = quantum ? this.state.linearGrid : this.state.quantumGrid
+    if (targetGrid[target] === 3) {
+      targetGrid[target] = 1
+    } else if (targetGrid[target] === 0) {
+      targetGrid[target] = 2
+    }
+    if (quantum) {
+      this.setState({linearGrid: targetGrid})
+    } else {
+      this.setState({quantumGrid: targetGrid})
+    }
   }
 
   componentDidMount() {
@@ -555,8 +571,10 @@ class Game extends React.Component {
 
     this.ws.onmessage = evt => {
       const data = JSON.parse(evt.data);
-      if (data.event == "q-board") {
+      if (data.event === "q-board") {
         this.setState({quantumGrid: data.quantumBoard});
+      } else if (data.event === "turn") {
+        this.determineHit(data.target, true)
       }
       console.log(data);
     }
