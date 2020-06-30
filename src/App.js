@@ -577,7 +577,7 @@ class Game extends React.Component {
       const data = JSON.parse(evt.data);
       if (data.event === "q-board") {
         this.setState({quantumGrid: data.quantumBoard});
-      } else if (data.event === "turn") {
+      } else if (data.event === "guess") {
         this.determineHit(data.target, true)
         this.nextPhase()
       }
