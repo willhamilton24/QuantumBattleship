@@ -368,6 +368,8 @@ class Game extends React.Component {
     }
   }
 
+  ws = new WebSocket('ws://localhost:8081')
+
   handleSquareClick = e => {
     const id = e.target.id
     let index = alphabet.indexOf(id.substring(0,1)) * 10 + parseInt(id.substring(1))
@@ -508,6 +510,7 @@ class Game extends React.Component {
     p += 1
     if (p >= 5) {
       this.setState({pregame: false, phase: p,});
+      this.ws.send(JSON.stringify({event: "p-board", playerBoard: this.state.linearGrid}));
     } else {
       let shipSize = 4
       if (p === 2 || p === 3) {
@@ -544,6 +547,24 @@ class Game extends React.Component {
         }
       }
     }
+
+    this.ws.onopen = () => {
+      console.log('connected');
+      this.ws.send(JSON.stringify({event: "start"}));
+    }
+
+    this.ws.onmessage = evt => {
+      const data = JSON.parse(evt.data);
+      if (data.event == "q-board") {
+        this.setState({quantumGrid: data.quantumBoard});
+      }
+      console.log(data);
+    }
+
+    this.ws.onclose = () => {
+      console.log('disconnected')
+    }
+
   }
 
   componentDidUpdate() {
