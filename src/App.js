@@ -100,52 +100,6 @@ const alphabet = ["a","b","c","d","e","f","g","h","i","j"]
 
 class Board extends React.Component {
 
-  // componentDidMount() {
-  //   for (let y = 0; y < 10; y++) {
-  //     let letter = alphabet[y];
-  //     for (let x = 0; x < 10; x++) {
-  //       let id = letter + x
-  //       let sq = document.getElementById(id)
-  //       if (sq != null) {
-  //         sq.addEventListener('click', this.handleClick)
-  //         let sqValue = this.props.data[y * 10 + x];
-  //         if (sqValue == 1) {
-  //           sq.className = "square hit"
-  //         } else if (sqValue == 2) {
-  //           sq.className = "square miss"
-  //         } else if (sqValue == 3) {
-  //           sq.className = "square ship"
-  //         } else {
-  //           sq.className = "square"
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
-  // componentDidUpdate() {
-  //   for (let y = 0; y < 10; y++) {
-  //     let letter = alphabet[y];
-  //     for (let x = 0; x < 10; x++) {
-  //       let id = letter + x
-  //       let sq = document.getElementById(id)
-  //       if (sq != null) {
-  //         sq.addEventListener('click', this.handleClick)
-  //         let sqValue = this.props.data[y * 10 + x];
-  //         if (sqValue == 1) {
-  //           sq.className = "square hit"
-  //         } else if (sqValue == 2) {
-  //           sq.className = "square miss"
-  //         } else if (sqValue == 3) {
-  //           sq.className = "square ship"
-  //         } else {
-  //           sq.className = "square"
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
   render() {
 
     return (
@@ -588,6 +542,50 @@ class Game extends React.Component {
   }
 
   componentDidMount() {
+    for (let y = 0; y < 10; y++) {
+      let letter = alphabet[y];
+      for (let x = 0; x < 10; x++) {
+        let id = letter + x
+        let sq = document.getElementById(id)
+        if (sq != null) {
+          sq.addEventListener('click', this.handleClick)
+          let sqValue = this.props.data[y * 10 + x];
+          if (sqValue == 1) {
+            sq.className = "square hit"
+          } else if (sqValue == 2) {
+            sq.className = "square miss"
+          } else if (sqValue == 3) {
+            sq.className = "square ship"
+          } else {
+            sq.className = "square"
+          }
+        }
+      }
+    }
+  }
+
+  componentDidUpdate() {
+    for (let y = 0; y < 10; y++) {
+      let letter = alphabet[y];
+      for (let x = 0; x < 10; x++) {
+        let id = letter + x
+        let sq = document.getElementById(id)
+        if (sq != null) {
+          sq.addEventListener('click', this.handleClick)
+          let sqValue = this.props.data[y * 10 + x];
+          if (sqValue == 1) {
+            sq.className = "square hit"
+          } else if (sqValue == 2) {
+            sq.className = "square miss"
+          } else if (sqValue == 3) {
+            sq.className = "square ship"
+          } else {
+            sq.className = "square"
+          }
+        }
+      }
+    }
+
     this.ws.onopen = () => {
       console.log('connected');
       this.ws.send(JSON.stringify({event: "start"}));
@@ -606,11 +604,8 @@ class Game extends React.Component {
     this.ws.onclose = () => {
       console.log('disconnected')
     }
-
   }
-
   
-
   render() {
     return (
       <React.Fragment>
