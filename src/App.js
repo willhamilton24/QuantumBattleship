@@ -395,7 +395,7 @@ class Game extends React.Component {
       let rowSpace = origin % 10;
       for (let i = 0; i < this.state.shipLength - 1; i++) {
         origin -= 1
-        if (this.state.linearGrid[origin] != 0 || i > rowSpace) {
+        if (this.state.linearGrid[origin] != 0 || i >= rowSpace) {
           console.log("Placement Invalid")
           return false
         }
@@ -438,7 +438,7 @@ class Game extends React.Component {
       let rowSpace = 9 - origin % 10;
       for (let i = 0; i < this.state.shipLength - 1; i++) {
         origin += 1
-        if (this.state.linearGrid[origin] != 0 || i > rowSpace) {
+        if (this.state.linearGrid[origin] != 0 || i >= rowSpace) {
           console.log("Placement Invalid")
           return false
         }
