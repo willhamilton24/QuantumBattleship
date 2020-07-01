@@ -31,6 +31,9 @@ class App extends React.Component {
             <Route path="/human">
               <VersusHuman />
             </Route>
+            <Route path="/comp">
+              <VersusComp />
+            </Route>
           </Switch>
         </Router>
     );
@@ -546,8 +549,11 @@ class Game extends React.Component {
   }
 
   evaluateStats(enemy, ally) {
-    let h, m, d, s, i, j;
-    for (i = 0; i < 100; i++) {
+    let h = 0;
+    let m = 0;
+    let d = 0;
+    let s = 0; 
+    for (let i = 0; i < 100; i++) {
       switch(enemy[i]) {
         case 1:
           h++
@@ -556,22 +562,23 @@ class Game extends React.Component {
           m++
           break;
       }
-    }
 
-    for (j = 0; j < 100; j++) {
-      switch(ally[j]) {
+      switch(ally[i]) {
         case 1:
+          d++
+          break;
+        case 3:
           s++
           break;
-        case 3 || 4:
-          d++
+        case 4:
+          s++
           break;
       }
     }
 
     return {
-      accuracy: h * 100 / (h + m),
-      health: s * 100 / (s + d)
+      accuracy: (h * 100 / (h + m)).toFixed(0),
+      health: (s * 100 / (s + d)).toFixed(0)
     }
   }
 
@@ -631,7 +638,12 @@ class Game extends React.Component {
 
     this.ws.onopen = () => {
       console.log('connected');
-      this.ws.send(JSON.stringify({event: "start"}));
+      if (!this.props.player) {
+        this.ws.send(JSON.stringify({event: "start"}));
+      } else {
+        this.ws.send(JSON.stringify({event: "c_start"}));
+      }
+      
     }
 
     this.ws.onmessage = evt => {
@@ -643,6 +655,13 @@ class Game extends React.Component {
         let stats = this.evaluateStats(this.state.linearGrid, this.state.quantumGrid);
         this.setState({quantumStats: stats});
         this.nextPhase()
+      } else if (data.event === "board") {
+        this.setState({quantumGrid: data.quantumBoard.map(x => x * 4)});
+        this.setState({pregame: false});
+      } else if (data.event === "c-guess") {
+        this.determineHit(data.target, false)
+        let stats = this.evaluateStats(this.state.quantumGrid, this.state.linearGrid);
+        this.setState({playerStats: stats});
       }
       console.log(data);
     }
@@ -754,7 +773,17 @@ class VersusHuman extends React.Component {
   render() {
     return(
       <div>
-        <Game  />
+        <Game player />
+      </div>
+    )
+  }
+}
+
+class VersusComp extends React.Component {
+  render() {
+    return(
+      <div>
+        <Game />
       </div>
     )
   }
