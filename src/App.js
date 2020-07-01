@@ -278,11 +278,11 @@ class PlayerDashboard extends React.Component {
       return (
         <Row style={{textAlign: "center", marginTop: "40px", marginRight: "70px"}}>
           <Col style={{marginRight: "45px"}}>
-            <h1 className="deploy-counter">100%</h1>
+            <h1 className="deploy-counter">{this.props.stats.health}%</h1>
             <h3>Fleet Health</h3>
           </Col>
           <Col>
-            <h1 className="deploy-counter">100%</h1>
+            <h1 className="deploy-counter">{this.props.stats.accuracy}%</h1>
             <h3>Accuracy</h3>
           </Col>
           <Col>
@@ -307,11 +307,11 @@ class QuantumDashboard extends React.Component {
             <h4 style={{marginTop:"40px", textAlign: "left", color: "red"}}>{this.props.phase % 2 == 0 ? "Computer Turn" : ""}</h4>
           </Col>
           <Col style={{marginRight: "45px"}}>
-            <h1 className="deploy-counter">100%</h1>
+            <h1 className="deploy-counter">{this.props.stats.health}%</h1>
             <h3>Fleet Health</h3>
           </Col>
           <Col>
-            <h1 className="deploy-counter">100%</h1>
+            <h1 className="deploy-counter">{this.props.stats.accuracy}%</h1>
             <h3>Accuracy</h3>
           </Col>
         </Row>
@@ -335,9 +335,8 @@ class Game extends React.Component {
       0,0,0,0,0,0,0,0,0,0
     ],
     quantumStats: {
-      attempts: 0,
-      hits: 0,
-      health: 17,
+      accuracy: 0,
+      health: 100,
     },
     linearGrid: [
     0,0,0,0,0,0,0,0,0,0,
@@ -352,9 +351,8 @@ class Game extends React.Component {
     0,0,0,0,0,0,0,0,0,0
     ],
     playerStats: {
-      attempts: 0,
-      hits: 0,
-      health: 17,
+      accuracy: 0,
+      health: 100,
     },
     pregame: true,
     placeIndex: -1,
@@ -380,12 +378,15 @@ class Game extends React.Component {
         data[index] = 3
         this.setState({linearGrid: data, placeIndex: index})
         console.log(this.state.linearGrid[index])
+        console.log(this.state.linearGrid)
 
         document.addEventListener("keydown", this.placeShip);
       }
     } else {
       if (this.state.phase % 2 != 0) {
         this.determineHit(index, false)
+        let stats = this.evaluateStats(this.state.quantumGrid, this.state.linearGrid)
+        this.setState({playerStats: stats})
         this.nextPhase()
         this.ws.send(JSON.stringify({event: "turn"}));
       }
@@ -532,7 +533,7 @@ class Game extends React.Component {
 
   determineHit(target, quantum) {
     let targetGrid = quantum ? this.state.linearGrid : this.state.quantumGrid
-    if (targetGrid[target] === 3) {
+    if (targetGrid[target] > 2) {
       targetGrid[target] = 1
     } else if (targetGrid[target] === 0) {
       targetGrid[target] = 2
@@ -544,29 +545,89 @@ class Game extends React.Component {
     }
   }
 
+  evaluateStats(enemy, ally) {
+    let h, m, d, s, i, j;
+    for (i = 0; i < 100; i++) {
+      switch(enemy[i]) {
+        case 1:
+          h++
+          break;
+        case 2:
+          m++
+          break;
+      }
+    }
+
+    for (j = 0; j < 100; j++) {
+      switch(ally[j]) {
+        case 1:
+          s++
+          break;
+        case 3 || 4:
+          d++
+          break;
+      }
+    }
+
+    return {
+      accuracy: h * 100 / (h + m),
+      health: s * 100 / (s + d)
+    }
+  }
+
   componentDidMount() {
-    for (let y = 0; y < 10; y++) {
-      let letter = alphabet[y];
-      for (let x = 0; x < 10; x++) {
-        let id = letter + x;
-        let sq = document.getElementById(id);
-        if (sq != null) {
-          sq.addEventListener('click', this.handleSquareClick);
-          let sqValue = this.state.linearGrid[y * 10 + x];
+    const tables = document.getElementsByTagName("tbody")
+    for (let i = 0; i < tables.length; i++) {
+      let squares = tables[i].getElementsByTagName("td")
+      for (let a = 1; a < squares.length; a++) {
+        if (a % 11 !== 0) {
+          squares[a].addEventListener('click', this.handleSquareClick);
+          let grid = i > 0 ? this.state.quantumGrid : this.state.linearGrid;
+          let id = squares[a].id
+          let index = alphabet.indexOf(id.substring(0,1)) * 10 + parseInt(id.substring(1))
+          let sqValue = grid[index]
           if (sqValue > 0) {
             if (sqValue == 1) {
-              sq.className = "square hit";
+              squares[a].className = "square hit";
             } else if (sqValue == 2) {
-              sq.className = "square miss";
+              squares[a].className = "square miss";
             } else if (sqValue == 3) {
-              sq.className = "square ship";
+              squares[a].className = "square ship";
             } else {
-              sq.className = "square";
+              squares[a].className = "square";
             }
           }
         }
       }
     }
+
+
+
+    // for (let z = 0; z < 2; z++) {
+    //   for (let y = 0; y < 10; y++) {
+    //     let letter = alphabet[y];
+    //     for (let x = 0; x < 10; x++) {
+    //       let id = letter + x;
+    //       let table = z > 0 ? quantumTableBody : playerTableBody;
+    //       let sq = table.getElementById(id);
+    //       if (sq != null) {
+    //         sq.addEventListener('click', this.handleSquareClick);
+    //         let sqValue = this.state.linearGrid[y * 10 + x];
+    //         if (sqValue > 0) {
+    //           if (sqValue == 1) {
+    //             sq.className = "square hit";
+    //           } else if (sqValue == 2) {
+    //             sq.className = "square miss";
+    //           } else if (sqValue == 3) {
+    //             sq.className = "square ship";
+    //           } else {
+    //             sq.className = "square";
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
 
     this.ws.onopen = () => {
       console.log('connected');
@@ -576,9 +637,11 @@ class Game extends React.Component {
     this.ws.onmessage = evt => {
       const data = JSON.parse(evt.data);
       if (data.event === "q-board") {
-        this.setState({quantumGrid: data.quantumBoard});
+        this.setState({quantumGrid: data.quantumBoard.map(x => x * 4)});
       } else if (data.event === "guess") {
         this.determineHit(data.target, true)
+        let stats = this.evaluateStats(this.state.linearGrid, this.state.quantumGrid);
+        this.setState({quantumStats: stats});
         this.nextPhase()
       }
       console.log(data);
@@ -591,26 +654,59 @@ class Game extends React.Component {
   }
 
   componentDidUpdate() {
-    for (let y = 0; y < 10; y++) {
-      let letter = alphabet[y];
-      for (let x = 0; x < 10; x++) {
-        let id = letter + x
-        let sq = document.getElementById(id)
-        if (sq != null) {
-          sq.addEventListener('click', this.handleClick)
-          let sqValue = this.state.linearGrid[y * 10 + x];
-          if (sqValue == 1) {
-            sq.className = "square hit"
-          } else if (sqValue == 2) {
-            sq.className = "square miss"
-          } else if (sqValue == 3) {
-            sq.className = "square ship"
-          } else {
-            sq.className = "square"
+    const tables = document.getElementsByTagName("tbody")
+    for (let i = 0; i < tables.length; i++) {
+      let squares = tables[i].getElementsByTagName("td")
+      for (let a = 1; a < squares.length; a++) {
+        if (a % 11 !== 0) {
+          squares[a].addEventListener('click', this.handleSquareClick);
+          let grid = i > 0 ? this.state.quantumGrid : this.state.linearGrid;
+          let id = squares[a].id
+          let index = alphabet.indexOf(id.substring(0,1)) * 10 + parseInt(id.substring(1))
+          let sqValue = grid[index]
+          if (sqValue > 0) {
+            if (sqValue == 1) {
+              squares[a].className = "square hit";
+              console.log("hit!")
+            } else if (sqValue == 2) {
+              squares[a].className = "square miss";
+            } else if (sqValue == 3) {
+              squares[a].className = "square ship";
+            } else {
+              squares[a].className = "square";
+            }
           }
         }
       }
     }
+    // const playerTableBody = document.getElementsByTagName("tbody").item(0);
+    // const quantumTableBody = document.getElementsByTagName("tbody").item(1);
+
+    // for (let z = 0; z < 2; z++) {
+    //   for (let y = 0; y < 10; y++) {
+    //     let letter = alphabet[y];
+    //     for (let x = 0; x < 10; x++) {
+    //       let id = letter + x;
+    //       let table = z > 0 ? quantumTableBody : playerTableBody;
+    //       let sq = table.getElementById(id);
+    //       if (sq != null) {
+    //         sq.addEventListener('click', this.handleSquareClick);
+    //         let sqValue = this.state.linearGrid[y * 10 + x];
+    //         if (sqValue > 0) {
+    //           if (sqValue == 1) {
+    //             sq.className = "square hit";
+    //           } else if (sqValue == 2) {
+    //             sq.className = "square miss";
+    //           } else if (sqValue == 3) {
+    //             sq.className = "square ship";
+    //           } else {
+    //             sq.className = "square";
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   render() {
@@ -623,7 +719,7 @@ class Game extends React.Component {
               <span className="phase-label">     - {this.state.pregame ? "Deployment" : "Combat"} Phase</span>
             </h1>
             <Board data={this.state.linearGrid} quantum={false}/>
-            <PlayerDashboard phase={this.state.phase} />
+            <PlayerDashboard phase={this.state.phase} stats={this.state.playerStats} />
             <div style={this.state.pregame ? {marginLeft: "45px"} : {display: "none"}}>
               <Button variant="info" onClick={this.openTutorial}>How Do I Deploy Ships?</Button>
               <Button variant={"danger"} disabled={this.state.placeIndex < 0} onClick={this.cancelPlacement} style={{marginLeft: "10px"}}>Cancel Placement</Button>
@@ -632,7 +728,7 @@ class Game extends React.Component {
           <Col>
             <h1 className="faction-name">Quantum Armada</h1>
             <Board data={this.state.QuantumGrid} quantum={true}/>
-            <QuantumDashboard phase={this.state.phase} />
+            <QuantumDashboard phase={this.state.phase} stats={this.state.quantumStats} />
           </Col>
         </Row>
 
