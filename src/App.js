@@ -578,7 +578,7 @@ class Game extends React.Component {
 
     return {
       accuracy: (h * 100 / (h + m)).toFixed(0),
-      health: (s * 100 / (s + d)).toFixed(0)
+      health: Number.isNaN((s * 100 / (s + d)).toFixed(0)) ? 100 : (s * 100 / (s + d)).toFixed(0)
     }
   }
 
@@ -638,7 +638,7 @@ class Game extends React.Component {
 
     this.ws.onopen = () => {
       console.log('connected');
-      if (!this.props.player) {
+      if (this.props.player) {
         this.ws.send(JSON.stringify({event: "start"}));
       } else {
         this.ws.send(JSON.stringify({event: "c_start"}));
