@@ -25,13 +25,10 @@ class App extends React.Component {
             <Route exact path="/">
               <Home />
             </Route>
-            <Route path="/conv">
-              <h1>VS Conventional Computer</h1>
-            </Route>
             <Route path="/human">
               <VersusHuman />
             </Route>
-            <Route path="/comp">
+            <Route path="/conv">
               <VersusComp />
             </Route>
           </Switch>
@@ -264,7 +261,7 @@ class PlayerDashboard extends React.Component {
   render() {
     let ships = ["Carrier - 5 Spaces","Battleship - 4 Spaces","Cruiser 1 - 3 Spaces","Cruiser 2 - 3 Spaces","Destroyer - 2 Spaces"]
     let shipGraphics = ["carrier.jpg","battleship.jpg","cruiser.jpg","cruiser.jpg","destroyer.jpg"]
-    if (this.props.phase < 5) {
+    if (this.props.phase < 5 && this.props.player) {
       return (
           <Row>
             <Col xs={"8"}>
@@ -588,7 +585,7 @@ class Game extends React.Component {
       let squares = tables[i].getElementsByTagName("td")
       for (let a = 1; a < squares.length; a++) {
         if (a % 11 !== 0) {
-          squares[a].addEventListener('click', this.handleSquareClick);
+          if (this.props.player) { squares[a].addEventListener('click', this.handleSquareClick); }
           let grid = i > 0 ? this.state.quantumGrid : this.state.linearGrid;
           let id = squares[a].id
           let index = alphabet.indexOf(id.substring(0,1)) * 10 + parseInt(id.substring(1))
@@ -639,11 +636,9 @@ class Game extends React.Component {
     this.ws.onopen = () => {
       console.log('connected');
       if (!this.props.player) {
-        this.ws.send(JSON.stringify({event: "start"}));
-      } else {
         this.ws.send(JSON.stringify({event: "c_start"}));
       }
-      
+      this.ws.send(JSON.stringify({event: "start"}));
     }
 
     this.ws.onmessage = evt => {
@@ -654,14 +649,19 @@ class Game extends React.Component {
         this.determineHit(data.target, true)
         let stats = this.evaluateStats(this.state.linearGrid, this.state.quantumGrid);
         this.setState({quantumStats: stats});
-        this.nextPhase()
-      } else if (data.event === "board") {
+        this.nextPhase();
+        if (!this.props.player) { this.ws.send(JSON.stringify({event: "c_turn"}));}
+      } else if (data.event === "c_q-board") {
         this.setState({quantumGrid: data.quantumBoard.map(x => x * 4)});
         this.setState({pregame: false});
-      } else if (data.event === "c-guess") {
+        this.ws.send(JSON.stringify({event: "c_p-board", playerBoard: data.quantumBoard}));
+        this.ws.send(JSON.stringify({event: "c_turn"}));
+      } else if (data.event === "c_guess") {
         this.determineHit(data.target, false)
         let stats = this.evaluateStats(this.state.quantumGrid, this.state.linearGrid);
         this.setState({playerStats: stats});
+        this.nextPhase();
+        this.ws.send(JSON.stringify({event: "turn"}))
       }
       console.log(data);
     }
@@ -678,7 +678,6 @@ class Game extends React.Component {
       let squares = tables[i].getElementsByTagName("td")
       for (let a = 1; a < squares.length; a++) {
         if (a % 11 !== 0) {
-          squares[a].addEventListener('click', this.handleSquareClick);
           let grid = i > 0 ? this.state.quantumGrid : this.state.linearGrid;
           let id = squares[a].id
           let index = alphabet.indexOf(id.substring(0,1)) * 10 + parseInt(id.substring(1))
