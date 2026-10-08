@@ -1,3 +1,9 @@
+# QuantumBattleship
+
+![Concept](https://img.shields.io/badge/Concept-F-red) ![Effort to Cashflow](https://img.shields.io/badge/Effort_to_Cashflow-90%2F100-red)
+
+React web game of Battleship played against a Qiskit-powered quantum computer opponent (hackathon project).
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
@@ -66,3 +72,14 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/de
 ### `npm run build` fails to minify
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+
+## 💰 Path to Revenue
+A quantum-computing-themed Battleship demo is an educational novelty, not a product; the only plausible money is repackaging it as quantum-education content (workshops, course material), which is essentially a different business.
+
+### Release TODOs
+- [ ] Finish the "VS Conventional Computer" mode (currently just a placeholder heading)
+- [ ] Wire up or document the actual Qiskit backend the frontend expects
+- [ ] Deploy the static build to GitHub Pages/Netlify so it is playable at a public URL
+- [ ] Replace the default CRA README body with real gameplay/about docs
+- [ ] If pursuing revenue: pitch it as a quantum-education demo to workshop/course platforms rather than selling the game itself
+- [ ] Otherwise archive it as a portfolio/hackathon piece
